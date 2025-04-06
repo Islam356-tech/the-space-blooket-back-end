@@ -1,38 +1,46 @@
-import express, { response } from 'express';
+import express from 'express';
+import http from 'http';
+import { Server } from 'socket.io'; // ✅
 import cors from 'cors';
-import router from './routes/auth.js';
+import dotenv from 'dotenv';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv'
+import gameRoutes from './routes/gameRoutes.js';
 
-const app = express();
-
-// Allow CORS for specific origin (localhost:3000 in this case)
-app.use(cors({
-    origin: 'http://localhost:3000', // Allow frontend running on localhost:3000
-    methods: ['POST'],
-    credentials: true  // Allow cookies if needed
-}));  
 dotenv.config();
 
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
-    console.log("✅ MongoDB Connected!");
-  } catch (error) {
-    console.error("❌ MongoDB Connection Error:", error.message);
-    process.exit(1);
+const app = express();
+const server = http.createServer(app);
+
+// ✅ only declare io once
+const io = new Server(server, {
+  cors: {
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST']
   }
-};
-app.use('/api/auth', (req, res) => {
-  res.send('Auth route working!');
 });
-connectDB();
-app.use(express.json());  // For parsing application/json
-app.use(express.urlencoded({ extended: true }));
-app.use('/api/auth', router);  // Your auth routes
-// Start the server
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use('/api/games', gameRoutes);
+
+// DB connection
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).then(() => console.log('✅ MongoDB connected'))
+  .catch(err => console.error('MongoDB connection error:', err));
+
+// Sockets
+io.on('connection', (socket) => {
+  console.log('🔥 Socket connected:', socket.id);
+  socket.on('disconnect', () => {
+    console.log('❌ Socket disconnected:', socket.id);
+  });
+});
+
+// Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+});

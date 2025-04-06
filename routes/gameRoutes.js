@@ -1,12 +1,18 @@
-const express = require('express');
+import express from 'express';
+import {
+  createGame,
+  getGames,
+  getGameById,
+  updateGame,
+  deleteGame
+} from '../controllers/gameControllers.js';
+
 const router = express.Router();
-const gameController = require('../controllers/gameController');
 
-// CRUD Endpoints
-router.post('/game', gameController.createGame);       // Create
-router.get('/game', gameController.getGames);          // Read All
-router.get('/game/:id', gameController.getGameById);    // Read One
-router.put('/game/:id', gameController.updateGame);     // Update
-router.delete('/game/:id', gameController.deleteGame);  // Delete
+router.post('/', createGame);          // Create
+router.get('/', getGames);             // Get All
+router.get('/:id', getGameById);       // Get by ID
+router.put('/:id', updateGame);        // Update
+router.delete('/:id', deleteGame);     // Delete
 
-module.exports = router;
+export default router;

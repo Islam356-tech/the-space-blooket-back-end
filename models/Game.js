@@ -1,11 +1,13 @@
-const mongoose = require('mongoose');
+// models/Game.js
+import mongoose from 'mongoose';
 
 const gameSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
-  genre: { type: String, required: true },
-  releaseDate: { type: Date, default: Date.now },
-  rating: { type: Number, min: 0, max: 10 }
+  public: { type: Boolean, default: true }, // public field
+  createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('Game', gameSchema);
+const Game = mongoose.model('Game', gameSchema);
+
+export default Game;
